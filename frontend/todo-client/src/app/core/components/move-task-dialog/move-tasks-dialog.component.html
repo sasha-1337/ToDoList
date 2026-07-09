@@ -1,0 +1,27 @@
+<h2 mat-dialog-title>Перенести {{ data.taskCount }} {{ data.taskCount === 1 ? 'таску' : 'тасок' }}</h2>
+
+<div mat-dialog-content>
+  @if (isLoading()) {
+    <div class="flex justify-center py-6">
+      <mat-spinner diameter="28"></mat-spinner>
+    </div>
+  } @else {
+    <mat-radio-group [(ngModel)]="selectedCategoryId" class="flex flex-col gap-1">
+      <mat-radio-button [value]="null" class="py-1">Без категорії</mat-radio-button>
+      @for (category of categories(); track category.id) {
+        <mat-radio-button [value]="category.id" class="py-1">{{ category.name }}</mat-radio-button>
+      }
+    </mat-radio-group>
+
+    @if (categories().length === 0) {
+      <p class="mt-2 text-sm text-slate-400">Інших категорій немає — можна перенести лише "Без категорії".</p>
+    }
+  }
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="dialogRef.close()">Скасувати</button>
+  <button mat-flat-button color="primary" type="button" [disabled]="isLoading()" (click)="confirm()">
+    Перенести
+  </button>
+</div>

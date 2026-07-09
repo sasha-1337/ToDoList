@@ -1,0 +1,42 @@
+<h2 mat-dialog-title class="text-center">Профіль</h2>
+
+<div mat-dialog-content class="flex flex-col items-center justify-center gap-3 py-4 text-center">
+  @if (authService.user(); as user) {
+    <img
+      [src]="user.avatarUrl || 'https://api.dicebear.com/7.x/initials/svg?seed=' + user.username"
+      alt="Avatar"
+      class="h-16 w-16 rounded-full object-cover ring-2 ring-slate-100 shadow-sm mx-auto"
+    />
+    
+    <div class="w-full flex flex-col items-center justify-center">
+      <p class="text-base font-semibold text-slate-900">{{ user.username }}</p>
+      <p class="text-sm text-slate-500">{{ user.email }}</p>
+      <p class="mt-1 text-[11px] font-medium text-slate-400">
+        В системі з {{ user.createdAt | date:'dd.MM.yyyy' }}
+      </p>
+      
+      <div class="mt-3 flex items-center justify-center gap-2">
+        <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200/60 px-2.5 py-0.5 text-xs font-semibold text-amber-700 shadow-sm">
+          <mat-icon class="text-sm! flex items-center justify-center" style="height: 14px; width: 14px;">stars</mat-icon>
+          {{ scoreStore.totalScore() }} балів
+        </span>
+        
+        <mat-icon
+          class="text-slate-300 hover:text-slate-500 cursor-help transition-colors flex items-center justify-center"
+          style="font-size: 16px; height: 16px; width: 16px;"
+          matTooltip="Правила: виконано вчасно або без дедлайну — 100% балів. Прострочено — 50%. Скасування віднімає зароблене."
+          matTooltipPosition="above"
+        >
+          info
+        </mat-icon>
+      </div>
+    </div>
+    
+  } @else {
+    <p class="text-sm text-slate-400 py-4">Дані користувача недоступні. Спробуйте перезавантажити сторінку.</p>
+  }
+</div>
+
+<div mat-dialog-actions align="end" class="border-t border-slate-100/60 pt-2">
+  <button mat-button (click)="dialogRef.close()">Закрити</button>
+</div>

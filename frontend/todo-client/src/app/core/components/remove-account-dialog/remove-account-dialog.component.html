@@ -1,0 +1,56 @@
+@if (step() === 'form') {
+  <h2 mat-dialog-title class="text-red-600">Видалення акаунта</h2>
+
+  <form [formGroup]="passwordForm" (ngSubmit)="onRequestSubmit()">
+    <div mat-dialog-content class="flex flex-col gap-1">
+      <p class="text-sm text-slate-500">
+        Цю дію не можна скасувати. Всі ваші категорії та таски буде видалено назавжди.
+      </p>
+
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Підтвердіть паролем</mat-label>
+        <input matInput type="password" formControlName="password" autocomplete="current-password" cdkFocusInitial />
+        @if (passwordForm.controls.password.hasError('required')) {
+          <mat-error>Обов'язкове поле</mat-error>
+        }
+      </mat-form-field>
+
+      @if (errorMessage()) {
+        <p class="text-sm text-red-600">{{ errorMessage() }}</p>
+      }
+    </div>
+
+    <div mat-dialog-actions align="end">
+      <button mat-button type="button" (click)="dialogRef.close()">Скасувати</button>
+      <button mat-flat-button color="warn" type="submit" [disabled]="passwordForm.invalid || isSubmitting()">
+        {{ isSubmitting() ? 'Надсилаємо…' : 'Надіслати код' }}
+      </button>
+    </div>
+  </form>
+} @else {
+  <h2 mat-dialog-title class="text-red-600">Останній крок</h2>
+
+  <form [formGroup]="codeForm" (ngSubmit)="onConfirmSubmit()">
+    <div mat-dialog-content class="flex flex-col gap-1">
+      <p class="text-sm text-slate-500">Ми надіслали код підтвердження на вашу пошту</p>
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Код з пошти</mat-label>
+        <input matInput formControlName="code" autocomplete="one-time-code" maxlength="6" />
+        @if (codeForm.controls.code.hasError('required')) {
+          <mat-error>Введіть код</mat-error>
+        }
+      </mat-form-field>
+
+      @if (errorMessage()) {
+        <p class="text-sm text-red-600">{{ errorMessage() }}</p>
+      }
+    </div>
+
+    <div mat-dialog-actions align="end">
+      <button mat-button type="button" (click)="backToForm()">Назад</button>
+      <button mat-flat-button color="warn" type="submit" [disabled]="codeForm.invalid || isSubmitting()">
+        {{ isSubmitting() ? 'Видаляємо…' : 'Видалити акаунт назавжди' }}
+      </button>
+    </div>
+  </form>
+}

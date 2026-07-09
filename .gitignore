@@ -5,3 +5,5 @@ obj/
 .env
 appsettings.json
 appsettings.Development.json
+frontend/todo-client/src/environments/environment.ts
+frontend/todo-client/proxy.conf.json

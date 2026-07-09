@@ -1,0 +1,32 @@
+<button
+  mat-icon-button
+  [matMenuTriggerFor]="menu"
+  matTooltip="Налаштування профілю"
+  class="h-8 w-8 shrink-0 text-slate-400 hover:text-slate-700"
+>
+  <mat-icon class="text-xl">settings</mat-icon>
+</button>
+
+<mat-menu #menu="matMenu" xPosition="before">
+  <button mat-menu-item (click)="openProfileInfo()">
+    <mat-icon>person</mat-icon>
+    <span>Профіль</span>
+  </button>
+
+  <button mat-menu-item (click)="openChangePassword()">
+    <mat-icon>lock</mat-icon>
+    <span>Змінити пароль</span>
+  </button>
+
+  <mat-divider></mat-divider>
+
+  <button mat-menu-item (click)="openRemoveAccount()">
+    <mat-icon class="text-red-600">delete_forever</mat-icon>
+    <span class="text-red-600">Видалити акаунт</span>
+  </button>
+
+  <button mat-menu-item (click)="logout()">
+    <mat-icon>logout</mat-icon>
+    <span>Вийти</span>
+  </button>
+</mat-menu>

@@ -1,0 +1,100 @@
+<div class="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+  <div class="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+    @if (step() === 'form') {
+      <h1 class="mb-1 text-xl font-semibold text-slate-900">Реєстрація</h1>
+      <p class="mb-6 text-sm text-slate-500">Створіть акаунт, щоб почати</p>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onRegisterSubmit()" class="flex flex-col gap-1">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" autocomplete="email" />
+          @if (registerForm.controls.email.hasError('required')) {
+            <mat-error>Email обов'язковий</mat-error>
+          } @else if (registerForm.controls.email.hasError('email')) {
+            <mat-error>Некоректний email</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Ім'я користувача</mat-label>
+          <input matInput formControlName="username" autocomplete="username" />
+          @if (registerForm.controls.username.hasError('required')) {
+            <mat-error>Ім'я обов'язкове</mat-error>
+          } @else if (registerForm.controls.username.hasError('minlength')) {
+            <mat-error>Мінімум 3 символи</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Пароль</mat-label>
+          <input matInput type="password" formControlName="password" autocomplete="new-password" />
+          @if (registerForm.controls.password.hasError('required')) {
+            <mat-error>Пароль обов'язковий</mat-error>
+          } @else if (registerForm.controls.password.hasError('minlength')) {
+            <mat-error>Мінімум 8 символів</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Підтвердіть пароль</mat-label>
+          <input matInput type="password" formControlName="confirmPassword" autocomplete="new-password" />
+          @if (registerForm.hasError('passwordsMismatch') && registerForm.controls.confirmPassword.touched) {
+            <mat-error>Паролі не збігаються</mat-error>
+          }
+        </mat-form-field>
+
+        @if (errorMessage()) {
+          <p class="mb-2 text-sm text-red-600">{{ errorMessage() }}</p>
+        }
+
+        <button
+          mat-flat-button
+          color="primary"
+          type="submit"
+          class="!mt-2 w-full"
+          [disabled]="registerForm.invalid || isSubmitting()"
+        >
+          {{ isSubmitting() ? 'Реєструємо…' : 'Зареєструватись' }}
+        </button>
+      </form>
+
+      <p class="mt-5 text-center text-sm text-slate-500">
+        Вже є акаунт?
+        <a routerLink="/login" class="font-medium text-indigo-600 hover:underline">Увійти</a>
+      </p>
+    } @else {
+      <h1 class="mb-1 text-xl font-semibold text-slate-900">Підтвердіть email</h1>
+      <p class="mb-6 text-sm text-slate-500">
+        Ми надіслали код на <span class="font-medium text-slate-700">{{ registeredEmail() }}</span>
+      </p>
+
+      <form [formGroup]="verifyForm" (ngSubmit)="onVerifySubmit()" class="flex flex-col gap-1">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Код підтвердження</mat-label>
+          <input matInput formControlName="code" autocomplete="one-time-code" maxlength="6" />
+          @if (verifyForm.controls.code.hasError('required')) {
+            <mat-error>Введіть код з листа</mat-error>
+          }
+        </mat-form-field>
+
+        @if (errorMessage()) {
+          <p class="mb-2 text-sm text-red-600">{{ errorMessage() }}</p>
+        }
+
+        <button
+          mat-flat-button
+          color="primary"
+          type="submit"
+          class="!mt-2 w-full"
+          [disabled]="verifyForm.invalid || isSubmitting()"
+        >
+          {{ isSubmitting() ? 'Перевіряємо…' : 'Підтвердити' }}
+        </button>
+
+        <button mat-button type="button" class="w-full" (click)="backToForm()">
+          Змінити дані реєстрації
+        </button>
+      </form>
+    }
+  </div>
+</div>

@@ -1,0 +1,104 @@
+<div class="flex h-full flex-col bg-white">
+  
+  <div class="flex items-center gap-3 border-b border-slate-200 px-5 py-5">
+    @if (authService.isLoading()) {
+      <p class="text-sm text-slate-400">Завантаження...</p>
+    } @else if (authService.user(); as user) {
+      <img
+        [src]="user.avatarUrl || 'https://api.dicebear.com/7.x/initials/svg?seed=' + (user.username || 'U')"
+        alt="Avatar"
+        class="h-11 w-11 rounded-full object-cover ring-2 ring-slate-100 shadow-sm"
+      />
+      <div class="min-w-0 flex-1">
+        <p class="truncate text-sm font-semibold text-slate-900">
+          {{ user.username }}
+        </p>
+        <p class="truncate text-xs text-slate-500">
+          {{ user.email }}
+        </p>
+        <div class="mt-1 flex items-center gap-10">
+          <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200/60 px-2 py-0.5 text-xs font-semibold text-amber-700 shadow-sm">
+            <mat-icon class="text-sm! w-5! h-5! ">stars</mat-icon>
+            {{ scoreStore.totalScore() }} балів
+          </span>
+          
+        </div>
+      </div>
+    } @else {
+      <p class="text-sm text-slate-500">Гість</p>
+    }
+    <app-user-menu class="relative right-1" />
+  </div>
+
+  <div class="flex items-center justify-between px-5 pb-1 pt-3">
+    <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">Категорії</span>
+    <button
+      mat-icon-button
+      matTooltip="Нова категорія"
+      (click)="openCreateDialog()"
+      class="h-8 w-8 p-0 flex items-center justify-center text-indigo-600 hover:bg-gray-500 transition-colors"
+    >
+      <mat-icon class="text-xl leading-none">add</mat-icon>
+    </button>
+  </div>
+
+  <div class="flex-1 overflow-y-auto px-2 pb-4">
+    <button
+      type="button"
+      (click)="selectCategory(null)"
+      class="group mb-0.5 flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition"
+      [class.bg-indigo-50]="activeCategoryId() === null"
+      [class.text-indigo-700]="activeCategoryId() === null"
+      [class.text-slate-700]="activeCategoryId() !== null"
+      [class.hover:bg-slate-50]="activeCategoryId() !== null"
+    >
+      <mat-icon class="mr-2 text-lg text-current">inbox</mat-icon>
+      <span class="flex-1 truncate font-medium">Усі таски</span>
+    </button>
+
+    @if (isLoading()) {
+      <p class="px-3 py-2 text-xs text-slate-400">Завантаження…</p>
+    } @else if (categories().length === 0) {
+      <p class="px-3 py-2 text-xs text-slate-400">Немає категорій. Створіть першу.</p>
+    }
+
+    @for (category of categories(); track category.id) {
+      <div
+        class="group flex w-full items-center rounded-lg px-3 py-2 text-sm transition cursor-pointer"
+        [class.bg-indigo-50]="activeCategoryId() === category.id"
+        [class.text-indigo-700]="activeCategoryId() === category.id"
+        [class.text-slate-700]="activeCategoryId() !== category.id"
+        [class.hover:bg-slate-50]="activeCategoryId() !== category.id"
+        (click)="selectCategory(category.id)"
+      >
+        <mat-icon class="h-5 w-5 mr-2 text-lg text-current">folder</mat-icon>
+        <span class="flex-1 truncate">{{ category.name }}</span>
+
+        @if (category.taskCount !== undefined) {
+          <span class="mr-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500 group-hover:hidden">
+            {{ category.taskCount }}
+          </span>
+        }
+
+        <div class="hidden items-center gap-1 group-hover:flex">
+          <button 
+            mat-icon-button 
+            matTooltip="Редагувати" 
+            (click)="openEditDialog(category, $event)" 
+            class="h-5 w-5 p-0 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-colors"
+          >
+            <mat-icon class="text-18px leading-none">edit</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            matTooltip="Видалити"
+            (click)="deleteCategory(category, $event)"
+            class="h-5 w-5 p-0 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors"
+          >
+            <mat-icon class="text-18px leading-none">delete</mat-icon>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

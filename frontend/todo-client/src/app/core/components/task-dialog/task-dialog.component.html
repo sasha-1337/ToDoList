@@ -1,0 +1,48 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Редагувати таску' : 'Нова таска' }}</h2>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div mat-dialog-content class="flex flex-col gap-1">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Назва</mat-label>
+          <input matInput formControlName="title" maxlength="100" cdkFocusInitial />
+          @if (form.controls.title.hasError('required')) {
+            <mat-error>Назва обов'язкова</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Опис</mat-label>
+          <textarea matInput formControlName="description" rows="3" maxlength="1000"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Категорія</mat-label>
+      <mat-select formControlName="categoryId">
+        <mat-option [value]="null">Без категорії</mat-option>
+        @for (cat of categories(); track cat.id) {
+          <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+      
+        <div class="flex gap-3">
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Дедлайн</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="deadline" />
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            @if (form.controls.deadline.hasError('required')) {
+              <mat-error>Вкажіть дедлайн</mat-error>
+            }
+          </mat-form-field>
+        </div>
+        
+      </div>
+
+      <div mat-dialog-actions align="end">
+        <button mat-button type="button" (click)="dialogRef.close()">Скасувати</button>
+        <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid">
+          {{ isEditMode ? 'Зберегти' : 'Створити' }}
+        </button>
+      </div>
+    </form>

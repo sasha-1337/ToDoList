@@ -1,0 +1,227 @@
+<div class="flex h-full flex-col">
+  <!-- Заголовок області -->
+  <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+    <h1 class="text-lg font-semibold text-slate-900">
+      {{ categoryId ? 'Таски категорії' : 'Усі таски' }}
+    </h1>
+    <div class="flex items-center gap-3">
+      
+    <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+      <mat-icon matPrefix class="mr-1 text-slate-400">search</mat-icon>
+      <input
+        matInput
+        placeholder="Пошук тасок "
+        [ngModel]="searchTerm()"
+        (ngModelChange)="onSearchInput($event)"
+      />
+    </mat-form-field>
+
+
+      <button
+        mat-button
+        [matMenuTriggerFor]="filterMenu"
+        matTooltip="Фільтр за статусом"
+      >
+        <mat-icon class="mr-1 text-lg!">filter_list</mat-icon>
+        {{ filterStatus() === 'all' ? 'Усі' : (filterStatus() === 'active' ? 'Активні' : 'Виконані') }}
+      </button>
+      <mat-menu #filterMenu="matMenu">
+        <button mat-menu-item (click)="setFilter('all')">
+          <mat-icon>{{ filterStatus() === 'all' ? 'check' : '' }}</mat-icon>
+          <span>Усі</span>
+        </button>
+        <button mat-menu-item (click)="setFilter('active')">
+          <mat-icon>{{ filterStatus() === 'active' ? 'check' : '' }}</mat-icon>
+          <span>Активні</span>
+        </button>
+        <button mat-menu-item (click)="setFilter('completed')">
+          <mat-icon>{{ filterStatus() === 'completed' ? 'check' : '' }}</mat-icon>
+          <span>Виконані</span>
+        </button>
+      </mat-menu>
+
+      <button
+          mat-button
+          (click)="toggleSort()"
+          matTooltip="Змінити напрямок сортування"
+          class="[&_.mat-mdc-button-persistent-ripple]:scale-125"
+        >
+          <mat-icon class="mr-1 text-lg">
+            {{ sortDirection() === 'desc' ? 'arrow_downward' : 'arrow_upward' }}
+          </mat-icon>
+          {{ sortDirection() === 'desc' ? 'Новіші' : 'Старіші' }}
+        </button>
+
+      <!-- Перемикач режиму множинного вибору -->
+      <button
+        mat-stroked-button
+        [color]="isSelectionMode() ? 'primary' : undefined"
+        (click)="toggleSelectionMode()"
+      >
+        <mat-icon class="mr-1 text-lg!">{{ isSelectionMode() ? 'close' : 'checklist' }}</mat-icon>
+        {{ isSelectionMode() ? 'Скасувати вибір' : 'Обрати кілька' }}
+      </button>
+
+      <button
+        mat-flat-button
+        color="primary"
+        [disabled]="!categoryId"
+        [matTooltip]="!categoryId ? 'Оберіть категорію, щоб додати таску' : ''"
+        (click)="openCreateDialog()"
+      >
+        <mat-icon class="mr-1 text-lg!">add</mat-icon>
+        Нова таска
+      </button>
+    </div>
+  </div>
+
+  <!-- Панель масових дій — з'являється, тільки коли є хоча б одна виділена таска -->
+  @if (isSelectionMode() && selectedCount() > 0) {
+    <div class="flex items-center justify-between border-b border-indigo-100 bg-indigo-50 px-6 py-2.5">
+      <div class="flex items-center gap-3">
+        <span class="text-sm font-medium text-indigo-700">Обрано: {{ selectedCount() }}</span>
+        <button mat-button (click)="toggleSelectAllLoaded()" class="text-xs!">
+          Виділити всі завантажені / зняти
+        </button>
+      </div>
+ 
+      <div class="flex items-center gap-1">
+        <button
+          mat-button
+          (click)="bulkMarkCompleted()"
+          [disabled]="isBulkActionRunning()"
+          matTooltip="Позначити обрані як виконані"
+        >
+          <mat-icon class="mr-1 text-lg!">check_circle</mat-icon>
+          Виконано
+        </button>
+ 
+        <button
+          mat-button
+          (click)="openBulkMoveDialog()"
+          [disabled]="isBulkActionRunning()"
+          matTooltip="Перенести обрані в іншу категорію"
+        >
+          <mat-icon class="mr-1 text-lg!">drive_file_move</mat-icon>
+          Перенести
+        </button>
+ 
+        <button
+          mat-button
+          (click)="bulkDeleteSelected()"
+          [disabled]="isBulkActionRunning()"
+          class="text-red-600"
+          matTooltip="Видалити обрані назавжди"
+        >
+          <mat-icon class="mr-1 text-lg! text-red-600">delete</mat-icon>
+          Видалити
+        </button>
+      </div>
+    </div>
+  }
+
+
+  <!-- Скрольований список з infinite scroll -->
+  <div class="flex-1 overflow-y-auto px-6 py-4" (scroll)="onScroll($event)">
+    @if (!initialLoadDone() && loading()) {
+      <div class="flex justify-center py-10">
+        <mat-spinner diameter="32"></mat-spinner>
+      </div>
+    } @else if (tasks().length === 0) {
+      <div class="flex flex-col items-center justify-center py-16 text-center text-slate-400">
+        <mat-icon class="h-10! w-10! text-4xl!">task_alt</mat-icon>
+        <p class="mt-2 text-sm">Тасок поки немає. Створіть першу за допомогою кнопки вище.</p>
+      </div>
+    } @else {
+      <ul class="flex flex-col gap-2">
+        @for (task of tasks(); track task.id) {
+          <li
+            class="group flex items-start gap-3 rounded-xl border bg-white px-4 py-3 transition"
+            [class.border-indigo-300]="isSelected(task.id)"
+            [class.bg-indigo-50]="isSelected(task.id)"
+            [class.border-slate-200]="!isSelected(task.id)"
+            [class.hover:border-slate-300]="!isSelected(task.id)"
+          >
+            <!-- Чекбокс ВИБОРУ (для масових дій) — окремо від чекбокса статусу нижче -->
+            @if (isSelectionMode()) {
+              <mat-checkbox
+                [checked]="isSelected(task.id)"
+                (change)="toggleSelected(task)"
+                class="mt-0.5"
+              ></mat-checkbox>
+            }
+ 
+            <!-- Чекбокс СТАТУСУ виконання — окрема дія, ніколи не плутається з вибором -->
+            <mat-checkbox
+              [checked]="task.isCompleted"
+              (change)="toggleStatus(task)"
+              class="mt-0.5"
+            ></mat-checkbox>
+ 
+            <div class="min-w-0 flex-1">
+              <p
+                class="truncate text-sm font-medium"
+                [class.line-through]="task.isCompleted"
+              >
+                <span
+                  class="text-slate-900"
+                  [class.text-slate-900]="!task.isCompleted"
+                  [class.text-black]="task.isCompleted"
+                >
+                  {{ task.categoryName }}
+                </span>
+                <span
+                  class="text-slate-900"
+                  [class.text-slate-400]="task.isCompleted"
+                >
+                  : {{ task.title }}
+                </span>
+              </p>
+              @if (task.description) {
+                <p class="mt-0.5 line-clamp-2 text-xs text-slate-500">{{ task.description }}</p>
+              }
+              <div class="mt-1.5 flex items-center gap-3 text-xs text-slate-400">
+                <span class="flex items-center gap-1">
+                  <mat-icon class="text-sm!" style="height: 14px; width: 14px;">event</mat-icon>
+                  {{ task.deadline | date: 'd MMM, HH:mm' }}
+                </span>
+                <span class="rounded-full bg-indigo-50 px-2 py-0.5 font-medium text-indigo-600">
+                  {{ task.score }} балів
+                </span>
+              </div>
+            </div>
+ 
+            @if (!isSelectionMode()) {
+              <button
+                mat-icon-button
+                [matMenuTriggerFor]="menu"
+                class="h-8 w-8 justify-center opacity-0 transition group-hover:opacity-100"
+              >
+                <mat-icon class="text-lg">more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="openEditDialog(task)">
+                  <mat-icon>edit</mat-icon>
+                  <span>Редагувати</span>
+                </button>
+                <button mat-menu-item (click)="deleteTask(task)" class="text-red-600">
+                  <mat-icon class="text-red-600">delete</mat-icon>
+                  <span>Видалити</span>
+                </button>
+              </mat-menu>
+            }
+          </li>
+        }
+      </ul>
+ 
+      @if (loading() && initialLoadDone()) {
+        <div class="flex justify-center py-4">
+          <mat-spinner diameter="24"></mat-spinner>
+        </div>
+      }
+      @if (!hasMore() && tasks().length > 0) {
+        <p class="py-4 text-center text-xs text-slate-400">Це всі таски</p>
+      }
+    }
+  </div>
+</div>
