@@ -116,7 +116,6 @@ export class AuthService {
 
   /** ініціює зміну паролю, бекенд шле код на пошту користувача. */
   requestChangePassword(oldPassword: string, newPassword: string): Observable<MessageResponse> {
-    console.log(oldPassword," - ",newPassword)
     return this.http.post<MessageResponse>(`${API_BASE}/change-password`, {
       oldPassword,
       newPassword,
@@ -128,7 +127,6 @@ export class AuthService {
   /** ініціює видалення акаунта, бекенд шле код на пошту. */
   requestRemoveAccount(password: string): Observable<MessageResponse> {
     const body: RemoveAccountInitRequest = { password };
-    console.log(password)
     return this.http.delete<MessageResponse>(`${API_BASE}/remove-account`, {
       body,
     });
